@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ statement.company }} — Income Statement</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --border-dark: #334155;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --primary: #0f766e;
+      --primary-hover: #115e59;
+      --negative: #b91c1c;
+      --row-hover: #f1f5f9;
+      --accent: #f8fafc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Controls Header */
+    .controls-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .filter-form {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .form-group label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .input-date {
+      padding: 0.55rem 0.85rem;
+      font-size: 0.9375rem;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .input-date:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+
+    .btn {
+      padding: 0.6rem 1.25rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .preset-pills {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--border);
+    }
+
+    .preset-label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .pill-btn {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .pill-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .pill-btn.active {
+      background: #0f766e;
+      color: #ffffff;
+      border-color: #0f766e;
+    }
+
+    /* Statement Report Header */
+    .report-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .company-name {
+      font-size: 1.625rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .statement-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 0.25rem;
+    }
+
+    .statement-period {
+      font-size: 0.9375rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    .currency-tag {
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Accounting Statement Table */
+    .statement-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9375rem;
+    }
+
+    .statement-table th {
+      padding: 0.6rem 0.75rem;
+      text-align: left;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .statement-table th.amount-col {
+      text-align: right;
+      width: 160px;
+    }
+
+    .statement-table th.total-col {
+      text-align: right;
+      width: 160px;
+    }
+
+    .statement-table td {
+      padding: 0.45rem 0.75rem;
+      vertical-align: middle;
+    }
+
+    /* Typography & Numbers */
+    .num {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .num.negative {
+      color: var(--negative);
+    }
+
+    /* Section Headers */
+    tr.section-header td {
+      padding-top: 1.25rem;
+      padding-bottom: 0.35rem;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* Account Lines */
+    tr.account-row:hover {
+      background-color: var(--row-hover);
+    }
+
+    .acc-indent {
+      padding-left: 1.5rem !important;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .acc-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      min-width: 44px;
+    }
+
+    .acc-name {
+      color: var(--text);
+    }
+
+    .empty-account-notice {
+      padding-left: 1.5rem;
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.875rem;
+    }
+
+    /* Subtotal Rows */
+    tr.subtotal-row td {
+      font-weight: 600;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    tr.subtotal-row td.subtotal-label {
+      padding-left: 0.75rem;
+      color: var(--text);
+    }
+
+    /* Summary Breakout Rows (Gross Profit, Operating Income) */
+    tr.summary-row td {
+      font-weight: 700;
+      font-size: 1rem;
+      padding-top: 0.85rem;
+      padding-bottom: 0.85rem;
+      border-top: 1px solid var(--border-dark);
+      border-bottom: 1px solid var(--border);
+      background-color: #f8fafc;
+    }
+
+    /* Net Income / The Bottom Line */
+    tr.net-income-row td {
+      font-size: 1.125rem;
+      font-weight: 800;
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+      border-top: 2px solid var(--border-dark);
+      border-bottom: 4px double var(--border-dark); /* Classic accounting double underline */
+      background-color: #f1f5f9;
+      color: var(--text);
+    }
+
+    .alert-error {
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9375rem;
+    }
+
+    .api-badge {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .api-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .api-link:hover {
+      text-decoration: underline;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .controls-bar, .api-badge, .preset-pills {
+        display: none !important;
+      }
+      .card {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Controls -->
+    <div class="controls-bar">
+      <form class="filter-form" method="GET" action="/">
+        <div class="form-group">
+          <label for="start">Start Date</label>
+          <input type="date" id="start" name="start" class="input-date" value="{{ start }}" required>
+        </div>
+        <div class="form-group">
+          <label for="end">End Date</label>
+          <input type="date" id="end" name="end" class="input-date" value="{{ end }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">
+          Update Statement
+        </button>
+      </form>
+
+      <!-- Quick presets -->
+      <div class="preset-pills">
+        <span class="preset-label">Quick Periods:</span>
+        <a href="/?start=2026-01-01&end=2026-03-31" class="pill-btn {% if start == '2026-01-01' and end == '2026-03-31' %}active{% endif %}">Q1 2026</a>
+        <a href="/?start=2026-01-01&end=2026-01-31" class="pill-btn {% if start == '2026-01-01' and end == '2026-01-31' %}active{% endif %}">Jan 2026</a>
+        <a href="/?start=2026-02-01&end=2026-02-28" class="pill-btn {% if start == '2026-02-01' and end == '2026-02-28' %}active{% endif %}">Feb 2026</a>
+        <a href="/?start=2026-03-01&end=2026-03-31" class="pill-btn {% if start == '2026-03-01' and end == '2026-03-31' %}active{% endif %}">Mar 2026</a>
+        <a href="/?start=2025-12-15&end=2026-04-01" class="pill-btn {% if start == '2025-12-15' and end == '2026-04-01' %}active{% endif %}">All Activity</a>
+      </div>
+    </div>
+
+    {% if error %}
+    <div class="alert-error">
+      <strong>Error:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Income Statement Document -->
+    <div class="card">
+      <header class="report-header">
+        <h1 class="company-name">{{ statement.company }}</h1>
+        <h2 class="statement-title">Income Statement</h2>
+        <div class="statement-period">
+          For the Period <strong>{{ statement.period.start }}</strong> to <strong>{{ statement.period.end }}</strong>
+        </div>
+        <span class="currency-tag">{{ statement.currency }} ($) Exact Decimals</span>
+      </header>
+
+      <table class="statement-table">
+        <thead>
+          <tr>
+            <th>Line Item / Account</th>
+            <th class="amount-col">Detail</th>
+            <th class="total-col">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 1. Revenue -->
+          <tr class="section-header">
+            <td colspan="3">Revenue</td>
+          </tr>
+          {% for acc in statement.sections.revenue.accounts %}
+          <tr class="account-row">
+            <td class="acc-indent">
+              <span class="acc-number">{{ acc.number }}</span>
+              <span class="acc-name">{{ acc.name }}</span>
+            </td>
+            <td class="num {% if acc.amount.startswith('-') %}negative{% endif %}">
+              {{ format_currency(acc.amount) }}
+            </td>
+            <td></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3" class="empty-account-notice">No revenue recorded in this period</td>
+          </tr>
+          {% endfor %}
+          <tr class="subtotal-row">
+            <td class="subtotal-label">Total Revenue</td>
+            <td></td>
+            <td class="num {% if statement.sections.revenue.subtotal.startswith('-') %}negative{% endif %}">
+              {{ format_currency(statement.sections.revenue.subtotal) }}
+            </td>
+          </tr>
+
+          <!-- 2. Cost of goods sold -->
+          <tr class="section-header">
+            <td colspan="3">Cost of Goods Sold</td>
+          </tr>
+          {% for acc in statement.sections.cost_of_goods_sold.accounts %}
+          <tr class="account-row">
+            <td class="acc-indent">
+              <span class="acc-number">{{ acc.number }}</span>
+              <span class="acc-name">{{ acc.name }}</span>
+            </td>
+            <td class="num {% if acc.amount.startswith('-') %}negative{% endif %}">
+              {{ format_currency(acc.amount) }}
+            </td>
+            <td></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3" class="empty-account-notice">No cost of goods sold recorded in this period</td>
+          </tr>
+          {% endfor %}
+          <tr class="subtotal-row">
+            <td class="subtotal-label">Total Cost of Goods Sold</td>
+            <td></td>
+            <td class="num {% if statement.sections.cost_of_goods_sold.subtotal.startswith('-') %}negative{% endif %}">
+              {{ format_currency(statement.sections.cost_of_goods_sold.subtotal) }}
+            </td>
+          </tr>
+
+          <!-- 3. Gross Profit -->
+          <tr class="summary-row">
+            <td>Gross Profit</td>
+            <td></td>
+            <td class="num {% if statement.sections.gross_profit.startswith('-') %}negative{% endif %}">
+              {{ format_currency(statement.sections.gross_profit) }}
+            </td>
+          </tr>
+
+          <!-- 4. Operating Expenses -->
+          <tr class="section-header">
+            <td colspan="3">Operating Expenses</td>
+          </tr>
+          {% for acc in statement.sections.operating_expenses.accounts %}
+          <tr class="account-row">
+            <td class="acc-indent">
+              <span class="acc-number">{{ acc.number }}</span>
+              <span class="acc-name">{{ acc.name }}</span>
+            </td>
+            <td class="num {% if acc.amount.startswith('-') %}negative{% endif %}">
+              {{ format_currency(acc.amount) }}
+            </td>
+            <td></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3" class="empty-account-notice">No operating expenses recorded in this period</td>
+          </tr>
+          {% endfor %}
+          <tr class="subtotal-row">
+            <td class="subtotal-label">Total Operating Expenses</td>
+            <td></td>
+            <td class="num {% if statement.sections.operating_expenses.subtotal.startswith('-') %}negative{% endif %}">
+              {{ format_currency(statement.sections.operating_expenses.subtotal) }}
+            </td>
+          </tr>
+
+          <!-- 5. Operating Income -->
+          <tr class="summary-row">
+            <td>Operating Income</td>
+            <td></td>
+            <td class="num {% if statement.sections.operating_income.startswith('-') %}negative{% endif %}">
+              {{ format_currency(statement.sections.operating_income) }}
+            </td>
+          </tr>
+
+          <!-- 6. Other Income -->
+          <tr class="section-header">
+            <td colspan="3">Other Income</td>
+          </tr>
+          {% for acc in statement.sections.other_income.accounts %}
+          <tr class="account-row">
+            <td class="acc-indent">
+              <span class="acc-number">{{ acc.number }}</span>
+              <span class="acc-name">{{ acc.name }}</span>
+            </td>
+            <td class="num {% if acc.amount.startswith('-') %}negative{% endif %}">
+              {{ format_currency(acc.amount) }}
+            </td>
+            <td></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3" class="empty-account-notice">No other income recorded in this period</td>
+          </tr>
+          {% endfor %}
+          <tr class="subtotal-row">
+            <td class="subtotal-label">Total Other Income</td>
+            <td></td>
+            <td class="num {% if statement.sections.other_income.subtotal.startswith('-') %}negative{% endif %}">
+              {{ format_currency(statement.sections.other_income.subtotal) }}
+            </td>
+          </tr>
+
+          <!-- 7. Net Income -->
+          <tr class="net-income-row">
+            <td>Net Income</td>
+            <td></td>
+            <td class="num {% if statement.sections.net_income.startswith('-') %}negative{% endif %}">
+              {{ format_currency(statement.sections.net_income) }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <footer class="api-badge">
+        <span>Raw JSON API: <a class="api-link" href="/income-statement?start={{ statement.period.start }}&end={{ statement.period.end }}">/income-statement?start={{ statement.period.start }}&end={{ statement.period.end }}</a></span>
+        <span>Interactive API Docs: <a class="api-link" href="/docs">/docs</a></span>
+      </footer>
+    </div>
+  </div>
+</body>
+</html>
