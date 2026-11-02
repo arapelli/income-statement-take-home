@@ -74,8 +74,18 @@ def get_income_statement(
     include_zeros: bool = Query(False, description="Include accounts with 0 balance"),
 ):
     """Generates an Income Statement (P&L) for the specified date range."""
-    start_date = start or "2026-01-01"
-    end_date = end or "2026-03-31"
+    if not start and not end:
+        start_date = "2026-01-01"
+        end_date = "2026-03-31"
+    elif start and not end:
+        start_date = start
+        end_date = start
+    elif end and not start:
+        start_date = end
+        end_date = end
+    else:
+        start_date = start  # type: ignore[assignment]
+        end_date = end      # type: ignore[assignment]
 
     validate_date(start_date, "start")
     validate_date(end_date, "end")
@@ -107,8 +117,19 @@ def index(
     include_zeros: bool = Query(False),
 ):
     """Renders the accountant-friendly Income Statement UI."""
-    start_date = start or "2026-01-01"
-    end_date = end or "2026-03-31"
+    if not start and not end:
+        start_date = "2026-01-01"
+        end_date = "2026-03-31"
+    elif start and not end:
+        start_date = start
+        end_date = start
+    elif end and not start:
+        start_date = end
+        end_date = end
+    else:
+        start_date = start
+        end_date = end
+
     error: Optional[str] = None
     statement = None
 

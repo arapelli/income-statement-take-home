@@ -47,6 +47,35 @@ def test_api_income_statement_explicit_dates():
     assert data["sections"]["gross_profit"] == "8470.45"
 
 
+def test_api_single_date_start_only():
+    response = client.get(
+        "/income-statement",
+        params={"start": "2026-01-05"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["period"]["start"] == "2026-01-05"
+    assert data["period"]["end"] == "2026-01-05"
+    # On 2026-01-05: JE-002 (Product rev 12450.75) and JE-003 (COGS 4980.30)
+    assert data["sections"]["revenue"]["subtotal"] == "12450.75"
+    assert data["sections"]["cost_of_goods_sold"]["subtotal"] == "4980.30"
+    assert data["sections"]["gross_profit"] == "7470.45"
+
+
+def test_api_single_date_end_only():
+    response = client.get(
+        "/income-statement",
+        params={"end": "2026-01-01"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["period"]["start"] == "2026-01-01"
+    assert data["period"]["end"] == "2026-01-01"
+    # On 2026-01-01: JE-007 (Rent 9000.00)
+    assert data["sections"]["operating_expenses"]["subtotal"] == "9000.00"
+    assert data["sections"]["net_income"] == "-9000.00"
+
+
 def test_api_invalid_date_format():
     response = client.get(
         "/income-statement",
@@ -65,6 +94,16 @@ def test_api_invalid_calendar_date():
     assert "Invalid date format or calendar date" in response.json()["detail"]
 
 
+def test_api_leap_year_rejection():
+    # 2026 is not a leap year, Feb 29 does not exist
+    response = client.get(
+        "/income-statement",
+        params={"start": "2026-02-29", "end": "2026-03-31"},
+    )
+    assert response.status_code == 400
+    assert "Invalid date format or calendar date" in response.json()["detail"]
+
+
 def test_api_start_after_end():
     response = client.get(
         "/income-statement",
@@ -72,6 +111,39 @@ def test_api_start_after_end():
     )
     assert response.status_code == 400
     assert "cannot be after end date" in response.json()["detail"]
+
+
+def test_api_include_zeros():
+    # Single day with only Rent 9000.00
+    res_no_zeros = client.get(
+        "/income-statement",
+        params={"start": "2026-01-01", "end": "2026-01-01", "include_zeros": False},
+    )
+    assert len(res_no_zeros.json()["sections"]["revenue"]["accounts"]) == 0
+
+    res_with_zeros = client.get(
+        "/income-statement",
+        params={"start": "2026-01-01", "end": "2026-01-01", "include_zeros": True},
+    )
+    # Should show revenue accounts with 0.00
+    rev_accounts = res_with_zeros.json()["sections"]["revenue"]["accounts"]
+    assert len(rev_accounts) > 0
+    assert all(acc["amount"] == "0.00" for acc in rev_accounts)
+
+
+def test_api_all_activity_full_ledger():
+    response = client.get(
+        "/income-statement",
+        params={"start": "2025-12-15", "end": "2026-04-01"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    # All activity includes JE-001 (Dec 2025, 5000) and JE-024 (Apr 2026, 9100)
+    # Total product revenue = 35650.75 + 5000 + 9100 = 49750.75
+    prod_rev = [
+        acc for acc in data["sections"]["revenue"]["accounts"] if acc["number"] == "4000"
+    ][0]
+    assert prod_rev["amount"] == "49750.75"
 
 
 def test_frontend_index_html():
